@@ -18,6 +18,24 @@ M1 100%
 
 **Tidak ada kompromi.**
 
+## ATURAN: Regression Rule
+
+```
+Gate yang PASS tidak boleh rusak.
+
+M1.1 ✅ → Fix M1.2 → Retest M1.1, M1.2 → M1.1 harus tetap ✅
+```
+
+## ATURAN: Build Freeze
+
+```
+Selama M1:
+- ❌ Jangan tambah fitur
+- ❌ Jangan ubah GUI
+- ❌ Jangan ubah Runtime API
+- ✅ Hanya fix bug yang blockers M1
+```
+
 ---
 
 # MILESTONE M1 — QEMU Bring-up 🔴 PRIORITAS
@@ -158,9 +176,64 @@ Lihat `docs/bringup/` untuk log per gate.
 
 ---
 
-# MILESTONE M2 — Runtime Native Bring-up
+# MILESTONE M2 — Kernel Validation 🔴
 
 ## ATURAN: M2 belum boleh dimulai sebelum M1 100%
+
+## Alasan
+
+Setelah shell berhasil, lakukan **kernel validation** sebelum mulai runtime integration:
+- Stress test scheduler
+- Memory leak detection
+- VFS stress test
+- IPC stress test
+- Syscall validation
+
+Ini mencegah bug sulit dilacak yang sebenarnya berasal dari kernel.
+
+## Target
+
+```
+JowoKernel
+    ↓
+Stress Test
+    ↓
+Scheduler Test
+    ↓
+Memory Test
+    ↓
+VFS Test
+    ↓
+Syscall Test
+    ↓
+IPC Test
+```
+
+## Gates
+
+- [ ] M2.1 Scheduler stress test
+- [ ] M2.2 Memory leak detection
+- [ ] M2.3 VFS stress test
+- [ ] M2.4 Syscall validation
+- [ ] M2.5 IPC stress test
+
+## Status Overview
+
+| Gate | Status |
+|------|--------|
+| M2.1 Scheduler stress | ⚪ |
+| M2.2 Memory leak | ⚪ |
+| M2.3 VFS stress | ⚪ |
+| M2.4 Syscall validation | ⚪ |
+| M2.5 IPC stress | ⚪ |
+
+**M2 Progress:** 0%
+
+---
+
+# MILESTONE M3 — Runtime Native 🔴
+
+## ATURAN: M3 belum boleh dimulai sebelum M2 100%
 
 ## Target
 
@@ -187,29 +260,29 @@ write file
 
 ## Gates
 
-- [ ] M2.1 Runtime → Kernel API connection
-- [ ] M2.2 NativeProcessProvider.test()
-- [ ] M2.3 NativeFilesystemProvider.test()
-- [ ] M2.4 NativeMemoryProvider.test()
-- [ ] M2.5 NativeIpcProvider.test()
+- [ ] M3.1 Runtime → Kernel API connection
+- [ ] M3.2 NativeProcessProvider.test()
+- [ ] M3.3 NativeFilesystemProvider.test()
+- [ ] M3.4 NativeMemoryProvider.test()
+- [ ] M3.5 NativeIpcProvider.test()
 
 ## Status Overview
 
 | Gate | Status |
 |------|--------|
-| M2.1 Runtime-Kernel connection | ⚪ |
-| M2.2 Process Provider | ⚪ |
-| M2.3 Filesystem Provider | ⚪ |
-| M2.4 Memory Provider | ⚪ |
-| M2.5 IPC Provider | ⚪ |
+| M3.1 Runtime-Kernel connection | ⚪ |
+| M3.2 Process Provider | ⚪ |
+| M3.3 Filesystem Provider | ⚪ |
+| M3.4 Memory Provider | ⚪ |
+| M3.5 IPC Provider | ⚪ |
 
-**M2 Progress:** 0%
+**M3 Progress:** 0%
 
 ---
 
-# MILESTONE M3 — Desktop Bring-up 🟡
+# MILESTONE M4 — Desktop Bring-up 🟡
 
-## ATURAN: M3 belum boleh dimulai sebelum M2 100%
+## ATURAN: M4 belum boleh dimulai sebelum M3 100%
 
 ## Target
 
@@ -225,27 +298,27 @@ Compositor
 
 ## Gates
 
-- [ ] M3.1 klat-desktop build berhasil
-- [ ] M3.2 Desktop Shell muncul di QEMU
-- [ ] M3.3 Window bisa di-drag
-- [ ] M3.4 Taskbar berfungsi
-- [ ] M3.5 Tampilan sama dengan browser
+- [ ] M4.1 klat-desktop build berhasil
+- [ ] M4.2 Desktop Shell muncul di QEMU
+- [ ] M4.3 Window bisa di-drag
+- [ ] M4.4 Taskbar berfungsi
+- [ ] M4.5 Tampilan sama dengan browser
 
 ## Status Overview
 
 | Gate | Status |
 |------|--------|
-| M3.1 Desktop build | ⚪ |
-| M3.2 Desktop appears | ⚪ |
-| M3.3 Window drag | ⚪ |
-| M3.4 Taskbar | ⚪ |
-| M3.5 Same as browser | ⚪ |
+| M4.1 Desktop build | ⚪ |
+| M4.2 Desktop appears | ⚪ |
+| M4.3 Window drag | ⚪ |
+| M4.4 Taskbar | ⚪ |
+| M4.5 Same as browser | ⚪ |
 
-**M3 Progress:** 0%
+**M4 Progress:** 0%
 
 ---
 
-# MILESTONE M4 — Browser 🟡
+# MILESTONE M5 — Browser 🟡
 
 ## Target
 
@@ -284,16 +357,12 @@ GPU
 # PROGRESS SUMMARY
 
 ```
-M1: [          ] 0%
-M2: [          ] 0%
-M3: [          ] 0%
-M4: [          ] 0%
-M5: [          ] 0%
-M6: [          ] 0%
-M7: [          ] 0%
+M1: QEMU Bring-up     [          ] 0%
+M2: Kernel Validation [          ] 0%
+M3: Runtime Native    [          ] 0%
+M4: Desktop Bring-up  [          ] 0%
+M5: Browser          [          ] 0%
 ```
-
-## Gates Complete
 
 | Milestone | Gates | Passed | Failed |
 |-----------|-------|--------|--------|

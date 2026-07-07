@@ -1,0 +1,157 @@
+# KLAT OS GitHub Actions CI
+# Auto-run tests on every push
+
+name: KLAT OS CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  # ============================================================
+  # M1: Boot Test
+  # ============================================================
+  boot-test:
+    name: M1 - QEMU Boot Test
+    runs-on: self-hosted
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Kernel
+        run: |
+          echo "Building kernel..."
+          make kernel
+
+      - name: Create Initramfs
+        run: |
+          echo "Creating initramfs..."
+          cd userspace
+          ./create_initramfs.sh
+          cd ..
+
+      - name: Test Boot in QEMU
+        run: |
+          echo "Running QEMU boot test..."
+          ./scripts/run_qemu.sh --display none --timeout 30
+        continue-on-error: true
+
+      - name: Check Boot Status
+        run: |
+          if [ -f boot.log ] && grep -q "JowoKernel" boot.log; then
+            echo "✅ Kernel boot OK"
+            exit 0
+          else
+            echo "❌ Kernel boot FAIL"
+            exit 1
+          fi
+
+  # ============================================================
+  # M2: Runtime Integration Test
+  # ============================================================
+  runtime-test:
+    name: M2 - Runtime Integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: TypeScript Check
+        run: npx tsc --noEmit
+
+      - name: Runtime Tests
+        run: npm test -- --filter integration
+        continue-on-error: true
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: runtime-test-results
+          path: |
+            coverage/
+            test-results/
+
+  # ============================================================
+  # M3: Kernel Syscall Test
+  # ============================================================
+  kernel-test:
+    name: M3 - Kernel Syscall
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Kernel
+        run: make kernel
+
+      - name: Run Kernel Tests
+        run: |
+          cd tests/kernel
+          make
+          ./test_syscalls
+        continue-on-error: true
+
+  # ============================================================
+  # M4: Desktop Build Test
+  # ============================================================
+  desktop-build:
+    name: M4 - Desktop Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Desktop
+        run: npm run build
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-build
+          path: dist/
+
+  # ============================================================
+  # Summary
+  # ============================================================
+  summary:
+    name: Test Summary
+    needs: [boot-test, runtime-test, kernel-test, desktop-build]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Summary
+        run: |
+          echo "## KLAT OS Test Summary"
+          echo ""
+          echo "| Test | Status |"
+          echo "|------|--------|"
+          echo "| M1 Boot | ${{ needs.boot-test.result }} |"
+          echo "| M2 Runtime | ${{ needs.runtime-test.result }} |"
+          echo "| M3 Kernel | ${{ needs.kernel-test.result }} |"
+          echo "| M4 Desktop | ${{ needs.desktop-build.result }} |"

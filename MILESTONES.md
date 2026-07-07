@@ -6,74 +6,161 @@
 
 # 🚨 ATURAN UTAMA
 
-## Phase Implementasi SELESAI ✅
+## ATURAN: M1 → M2
 
-Phase 0-3 telah selesai dari sisi **implementasi**.
+```
+M1 harus 100% sebelum M2 dimulai.
 
-## Phase Validasi BELUM DIMULAI 🔴
+M1 100%
+    ↓
+    baru M2
+```
 
-Sekarang fokus adalah **validasi** - buktikan semua layer bekerja.
+**Tidak ada kompromi.**
 
 ---
 
 # MILESTONE M1 — QEMU Bring-up 🔴 PRIORITAS
 
-## Target
+## Gate Structure
 
 ```
-GRUB
+M1.1 Bootloader    [ ]
     ↓
-JowoKernel
+M1.2 Kernel Entry [ ]
     ↓
-Memory Manager
+M1.3 Memory Mgr   [ ]
     ↓
-Scheduler
+M1.4 Scheduler    [ ]
     ↓
-Init Process
+M1.5 Init Process [ ]
     ↓
-Shell
+M1.6 Shell        [ ]
+    ↓
+M1.7 Spawn Process[ ]
+    ↓
+M1.8 Filesystem RW[ ]
+    ↓
+M1.9 Shutdown     [ ]
 ```
 
-**Belum Desktop. Belum Browser. Yang penting boot stabil.**
+## M1 Gates
 
-## Checklist
+### M1.1 Bootloader
+**Target:** GRUB → Kernel Entry
+- [ ] GRUB memuat kernel.bin
+- [ ] Multiboot header valid
+- [ ] Kernel entry point ditemukan
+- [ ] Boot info diteruskan ke kernel
 
-- [ ] Kernel boot tanpa panic
-- [ ] Init berjalan
-- [ ] Shell menerima input
-- [ ] Spawn process berhasil
-- [ ] Filesystem root ter-mount
-- [ ] Syscall dasar berjalan (read/write/open)
+### M1.2 Kernel Entry
+**Target:** Kernel Entry → Main initialization
+- [ ] `_start` dieksekusi
+- [ ] GDT diinisialisasi
+- [ ] IDT diinisialisasi
+- [ ] Serial output berfungsi
+- [ ] Banner "JowoKernel" tercetak
 
-## Kriteria Sukses
+### M1.3 Memory Manager
+**Target:** Memory Manager → PMM initialized
+- [ ] Physical Memory Manager initialized
+- [ ] Memory map diparse
+- [ ] Page allocator berfungsi
+- [ ] test_vmm() PASS
 
+### M1.4 Scheduler
+**Target:** Scheduler → Multitasking enabled
+- [ ] Scheduler initialized
+- [ ] Idle thread berjalan
+- [ ] Thread switching berfungsi
+- [ ] APIC timer berjalan
+
+### M1.5 Init Process
+**Target:** Init Process → /bin/init running
+- [ ] init.elf dimuat dari initramfs
+- [ ] ELF loader parse header
+- [ ] User page table diciptakan
+- [ ] Stack userspace dialokasikan
+- [ ] enter_user_mode() dipanggil
+- [ ] Kembali ke kernel jika exit
+
+### M1.6 Shell
+**Target:** Shell → Interactive shell ready
+- [ ] Shell prompt muncul
+- [ ] Keyboard interrupt handler berfungsi
+- [ ] `help` bekerja
+- [ ] `echo` bekerja
+- [ ] `clear` bekerja
+- [ ] `version` bekerja
+- [ ] `exit` kembali ke init
+
+### M1.7 Spawn Process
+**Target:** Spawn Process → child process created
+- [ ] fork() syscall berfungsi
+- [ ] Child process memiliki page table sendiri
+- [ ] File descriptors di-duplicate
+- [ ] wait4() mengembalikan exit status
+
+### M1.8 Filesystem RW
+**Target:** Filesystem → open/read/write/mkdir/rename/delete
+- [ ] VFS initialized
+- [ ] Root filesystem mounted
+- [ ] open() berfungsi
+- [ ] read() berfungsi
+- [ ] write() berfungsi
+- [ ] mkdir() berfungsi
+- [ ] rename() berfungsi
+- [ ] unlink() berfungsi
+
+### M1.9 Shutdown
+**Target:** Shutdown → Clean system shutdown
+- [ ] Signal handling berfungsi
+- [ ] Exit syscall membersihkan resources
+- [ ] Memory di-freed
+- [ ] Serial output "Shutting down..."
+- [ ] QEMU exit gracefully
+
+## Quick Test Command
+
+```bash
+# Build kernel
+make kernel
+
+# Create initramfs
+cd userspace && ./create_initramfs.sh
+
+# Test boot
+./scripts/run_qemu.sh
+
+# Check output
+grep -E "JowoKernel|Init|Shell" boot.log
 ```
-QEMU запускается
-↓
-JowoKernel загружается
-↓
-Init запускается
-↓
-Shell работает
-↓
-Ввод работает
-```
 
-## Status
+## Status Overview
 
-| Komponen | Status |
-|----------|--------|
-| Bootloader (GRUB) | ✅ Ada |
-| Kernel Boot | ✅ Ada |
-| Memory Manager | ✅ Ada |
-| Scheduler | ✅ Ada |
-| Init Process | ✅ Ada (init.c) |
-| Shell | ✅ Ada (shell.c) |
-| **Bring-up QEMU** | 🔴 BELUM DITEST |
+| Gate | Status | Date | Notes |
+|------|--------|------|-------|
+| M1.1 Bootloader | ⚪ | - | |
+| M1.2 Kernel Entry | ⚪ | - | |
+| M1.3 Memory Manager | ⚪ | - | |
+| M1.4 Scheduler | ⚪ | - | |
+| M1.5 Init Process | ⚪ | - | |
+| M1.6 Shell | ⚪ | - | |
+| M1.7 Spawn Process | ⚪ | - | |
+| M1.8 Filesystem RW | ⚪ | - | |
+| M1.9 Shutdown | ⚪ | - | |
+
+**M1 Progress:** 0%
+
+## Detailed Logs
+
+Lihat `docs/bringup/` untuk log per gate.
 
 ---
 
-# MILESTONE M2 — Runtime Native Bring-up 🔴
+# MILESTONE M2 — Runtime Native Bring-up
+
+## ATURAN: M2 belum boleh dimulai sebelum M1 100%
 
 ## Target
 
@@ -87,11 +174,9 @@ Native Provider
 JowoKernel
 ```
 
-Gunakan aplikasi kecil dulu.
+## Test App
 
-## Aplikasi Test
-
-```
+```typescript
 Runtime Test App
     ↓
 create process
@@ -100,42 +185,31 @@ read file
 write file
 ```
 
-Kalau ini berhasil, berarti Native Provider sudah benar.
+## Gates
 
-## Checklist
+- [ ] M2.1 Runtime → Kernel API connection
+- [ ] M2.2 NativeProcessProvider.test()
+- [ ] M2.3 NativeFilesystemProvider.test()
+- [ ] M2.4 NativeMemoryProvider.test()
+- [ ] M2.5 NativeIpcProvider.test()
 
-- [ ] Runtime → Kernel API connection
-- [ ] NativeProcessProvider.test()
-- [ ] NativeFilesystemProvider.test()
-- [ ] NativeMemoryProvider.test()
-- [ ] NativeIpcProvider.test()
+## Status Overview
 
-## Kriteria Sukses
+| Gate | Status |
+|------|--------|
+| M2.1 Runtime-Kernel connection | ⚪ |
+| M2.2 Process Provider | ⚪ |
+| M2.3 Filesystem Provider | ⚪ |
+| M2.4 Memory Provider | ⚪ |
+| M2.5 IPC Provider | ⚪ |
 
-```
-npm test -- runtime
-    ↓
-Process Provider: PASS
-    ↓
-Filesystem Provider: PASS
-    ↓
-Memory Provider: PASS
-    ↓
-IPC Provider: PASS
-```
-
-## Status
-
-| Komponen | Status |
-|----------|--------|
-| Runtime | ✅ Ada |
-| Kernel API | ✅ Ada |
-| Native Provider | ✅ Ada |
-| **Integration Test** | 🔴 BELUM DITEST |
+**M2 Progress:** 0%
 
 ---
 
 # MILESTONE M3 — Desktop Bring-up 🟡
+
+## ATURAN: M3 belum boleh dimulai sebelum M2 100%
 
 ## Target
 
@@ -149,36 +223,25 @@ Kernel API
 Compositor
 ```
 
-**GUI tetap. Yang berubah hanya backend.**
+## Gates
 
-## Checklist
+- [ ] M3.1 klat-desktop build berhasil
+- [ ] M3.2 Desktop Shell muncul di QEMU
+- [ ] M3.3 Window bisa di-drag
+- [ ] M3.4 Taskbar berfungsi
+- [ ] M3.5 Tampilan sama dengan browser
 
-- [ ] klat-desktop build berhasil
-- [ ] Desktop Shell muncul di QEMU
-- [ ] Window bisa di-drag
-- [ ] Taskbar berfungsi
-- [ ] Tampilan sama dengan browser
+## Status Overview
 
-## Kriteria Sukses
+| Gate | Status |
+|------|--------|
+| M3.1 Desktop build | ⚪ |
+| M3.2 Desktop appears | ⚪ |
+| M3.3 Window drag | ⚪ |
+| M3.4 Taskbar | ⚪ |
+| M3.5 Same as browser | ⚪ |
 
-```
-Desktop muncul di QEMU
-    ↓
-Tampilan SAMA dengan browser
-    ↓
-Window operations berfungsi
-    ↓
-No GUI changes
-```
-
-## Status
-
-| Komponen | Status |
-|----------|--------|
-| klat-desktop | ✅ Ada (PROTECTED) |
-| Window Runtime | ✅ Ada |
-| Compositor | ⚪ Belum |
-| **Desktop Bring-up** | 🔴 BELUM DITEST |
+**M3 Progress:** 0%
 
 ---
 
@@ -196,246 +259,85 @@ Mesa
 GPU
 ```
 
-Hilangkan ketergantungan pada iframe.
+## Gates
 
-## Checklist
+- [ ] M4.1 WebKit build untuk KLAT OS
+- [ ] M4.2 WebKit Provider
+- [ ] M4.3 Mesa integration
+- [ ] M4.4 GPU acceleration
+- [ ] M4.5 iframe dihapus
 
-- [ ] WebKit build untuk KLAT OS
-- [ ] WebKit Provider
-- [ ] Mesa integration
-- [ ] GPU acceleration
-- [ ] iframe dihapus
+## Status Overview
 
-## Status
+| Gate | Status |
+|------|--------|
+| M4.1 WebKit build | ⚪ |
+| M4.2 WebKit Provider | ⚪ |
+| M4.3 Mesa | ⚪ |
+| M4.4 GPU | ⚪ |
+| M4.5 iframe removed | ⚪ |
 
-| Komponen | Status |
-|----------|--------|
-| WebKit | ⚪ Belum |
-| Mesa | ⚪ Belum |
-| GPU Driver | ⚪ Belum |
-| **Browser Integration** | 🔴 PLANNING |
-
----
-
-# MILESTONE M5 — Desktop Applications 🟡
-
-## Target
-
-```
-Browser
-    ↓
-Settings
-    ↓
-Terminal
-    ↓
-Files
-    ↓
-Gallery
-```
-
-## Status
-
-| Aplikasi | Status |
-|----------|--------|
-| Browser | ⚪ WebKit |
-| Settings | ⚪ Planning |
-| Terminal | ⚪ Planning |
-| Files | ⚪ Planning |
-| Gallery | ⚪ Planning |
+**M4 Progress:** 0%
 
 ---
 
-# MILESTONE M6 — Package Manager 🟡
-
-## Target
+# PROGRESS SUMMARY
 
 ```
-KLAT Store
-    ↓
-Package Runtime
-    ↓
-Repository
+M1: [          ] 0%
+M2: [          ] 0%
+M3: [          ] 0%
+M4: [          ] 0%
+M5: [          ] 0%
+M6: [          ] 0%
+M7: [          ] 0%
 ```
 
-## Status
+## Gates Complete
 
-| Komponen | Status |
-|----------|--------|
-| Package Format | ⚪ Planning |
-| Repository | ⚪ Planning |
-| KLAT Store | ⚪ Planning |
+| Milestone | Gates | Passed | Failed |
+|-----------|-------|--------|--------|
+| M1 | 9 | 0 | 0 |
+| M2 | 5 | 0 | 0 |
+| M3 | 5 | 0 | 0 |
+| M4 | 5 | 0 | 0 |
+| **Total** | **24** | **0** | **0** |
 
 ---
 
-# MILESTONE M7 — Hardware Support 🟡
-
-## Target
-
-```
-USB
-    ↓
-Bluetooth
-    ↓
-Camera
-    ↓
-Audio
-    ↓
-Network
-```
-
-## Status
-
-| Hardware | Status |
-|----------|--------|
-| USB | ⚪ Planning |
-| Bluetooth | ⚪ Planning |
-| Camera | ⚪ Planning |
-| Audio | ⚪ Planning |
-| Network | ⚪ Planning |
-
----
-
-# INTEGRATION TEST STRUCTURE
-
-Buat folder khusus untuk integration test:
-
-```
-tests/
-├── boot/
-│   ├── test_kernel_boot.s
-│   ├── test_init.s
-│   └── Makefile
-│
-├── runtime/
-│   ├── test_process_provider.ts
-│   ├── test_filesystem_provider.ts
-│   ├── test_memory_provider.ts
-│   ├── test_ipc_provider.ts
-│   └── Makefile
-│
-├── kernel/
-│   ├── test_syscalls.c
-│   ├── test_process.c
-│   ├── test_memory.c
-│   ├── test_vfs.c
-│   └── Makefile
-│
-├── filesystem/
-│   ├── test_vfs.c
-│   ├── test_ext2.c
-│   └── Makefile
-│
-├── process/
-│   ├── test_fork.c
-│   ├── test_exec.c
-│   ├── test_wait.c
-│   └── Makefile
-│
-├── window/
-│   ├── test_compositor.c
-│   ├── test_window.c
-│   └── Makefile
-│
-└── browser/
-    ├── test_webkit.c
-    ├── test_render.c
-    └── Makefile
-```
-
-## CI/CD Integration
-
-Setiap commit trigger otomatis:
-
-```yaml
-# .github/workflows/test.yml
-on: [push, pull_request]
-
-jobs:
-  boot-test:
-    runs-on: qemu
-    steps:
-      - run: make kernel
-      - run: make test-boot
-
-  runtime-test:
-    runs-on: ubuntu
-    steps:
-      - run: npm install
-      - run: npm test -- runtime
-
-  kernel-test:
-    runs-on: ubuntu
-    steps:
-      - run: make kernel
-      - run: make test-kernel
-```
-
----
-
-# PROGRESS DASHBOARD
-
-| Milestone | Komponen | Status | Priority |
-|-----------|----------|--------|----------|
-| **M1** | **QEMU Bring-up** | 🔴 | **🔴 PRIORITY** |
-| M1 | Bootloader | ✅ | - |
-| M1 | Kernel Boot | ✅ | - |
-| M1 | Memory Manager | ✅ | - |
-| M1 | Scheduler | ✅ | - |
-| M1 | Init | ✅ | - |
-| M1 | Shell | ✅ | - |
-| M1 | **Test di QEMU** | 🔴 | - |
-| **M2** | **Runtime Native** | 🔴 | - |
-| M2 | Runtime | ✅ | - |
-| M2 | Kernel API | ✅ | - |
-| M2 | Native Provider | ✅ | - |
-| M2 | **Integration Test** | 🔴 | - |
-| **M3** | **Desktop Bring-up** | 🟡 | - |
-| M3 | klat-desktop | ✅ (PROTECTED) | - |
-| M3 | Window Runtime | ✅ | - |
-| M3 | Compositor | ⚪ | - |
-| M3 | **Connect to Native** | 🔴 | - |
-| **M4** | **Browser** | 🟡 | - |
-| M4 | WebKit | ⚪ | - |
-| M4 | Mesa | ⚪ | - |
-| M4 | GPU | ⚪ | - |
-| **M5** | **Desktop Apps** | 🟡 | - |
-| M6 | Package Manager | ⚪ | - |
-| M7 | Hardware | ⚪ | - |
-
----
-
-# STATUS OVERVIEW
+# IMPLEMENTATION STATUS
 
 ```
 IMPLEMENTASI: ✅ SELESAI
-├── Kernel API: ✅
+├── Kernel: ✅
 ├── Runtime: ✅
 ├── Providers: ✅
 └── Userspace: ✅
 
 VALIDASI: 🔴 PRIORITAS
-├── M1 QEMU Bring-up: 🔴 TODO
-├── M2 Runtime Integration: 🔴 TODO
-└── M3 Desktop Connect: 🟡 PLANNING
-
-RELEASE: ⏳
-├── M4 Browser: ⏳
-├── M5 Apps: ⏳
-├── M6 Package Manager: ⏳
-└── M7 Hardware: ⏳
+├── M1 QEMU Bring-up: 🔴 START
+├── M2 Runtime: 🔴 WAIT M1
+└── M3 Desktop: 🟡 WAIT M2
 ```
 
 ---
 
 # NEXT ACTION
 
-1. **Test boot di QEMU** - `./scripts/run_qemu.sh`
-2. **Debug jika panic**
-3. **Validasi syscall bekerja**
-4. **Test init berjalan**
-5. **Test shell input**
+1. **Run M1.1 boot test**
+```bash
+make kernel
+./scripts/run_qemu.sh
+```
+
+2. **Check output**
+```bash
+grep "JowoKernel" boot.log
+```
+
+3. **Update docs/bringup/M1.1-bootloader.md**
 
 ---
 
 *Updated: 2026-07-07*
-*Focus: Validasi, bukan implementasi baru*
+*Focus: M1.1 → M1.9 (100% sebelum M2)*

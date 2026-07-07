@@ -41,20 +41,37 @@ kernel-api/
 │
 ├── contracts/           # Interface definitions
 │   ├── types.h         # Base types (handle_t, rights_t, signal_t, dll)
-│   ├── process.h       # Process & thread API
-│   ├── memory.h        # VMO & memory mapping API
+│   ├── process.h        # Process & thread API
+│   ├── memory.h         # VMO & memory mapping API
 │   ├── filesystem.h     # File & directory API
 │   └── ipc.h           # Channel, event, timer, socket API
 │
 ├── dispatcher/          # Syscall layer
-│   └── syscall_dispatcher.h  # Syscall numbers & wrappers
+│   ├── syscall_dispatcher.h  # Syscall numbers & wrappers
+│   ├── syscall_entry.S      # x86_64 syscall assembly stubs
+│   └── syscall_impl.c       # C syscall implementations
 │
 ├── handles/             # Handle management
-│   └── handles.h       # Handle operations
+│   └── handles.h        # Handle operations
 │
-└── errors/              # Error handling
-    ├── error_codes.h   # Error code definitions
-    └── error_impl.cpp  # Error string lookup
+├── errors/              # Error handling
+│   ├── error_codes.h    # Error code definitions (Linux + JowoKernel)
+│   └── error_impl.cpp   # Error string lookup
+│
+└── tests/              # Unit tests
+    ├── Makefile
+    └── test_kernel_api.c  # C unit tests
+```
+
+**TypeScript Integration (klat-desktop):**
+```
+klat-desktop/src/runtime/kernel/
+├── index.ts            # KernelAPI facade
+├── types.ts           # TypeScript type bindings
+├── syscall.ts         # Native syscall bridge
+└── __tests__/
+    ├── types.test.ts   # Type tests
+    └── api.test.ts     # API tests
 ```
 
 ## Penggunaan
@@ -158,20 +175,40 @@ Link dengan userspace libc:
 | Component | Status |
 |-----------|--------|
 | Types | ✅ Done |
-| Error Codes | ✅ Done |
+| Error Codes (100+) | ✅ Done |
 | Process API | ✅ Done |
 | Memory API | ✅ Done |
 | Filesystem API | ✅ Done |
 | IPC API | ✅ Done |
 | Handle API | ✅ Done |
-| C++ Wrappers | ✅ Done |
+| C++ Wrappers (RAII) | ✅ Done |
+| Syscall Entry (x86_64) | ✅ Done |
+| Userspace Stubs | ✅ Done |
+| C Unit Tests | ✅ Done |
+| TypeScript Bindings | ✅ Done |
+| TypeScript Tests | ✅ Done |
 
 ## TODO
 
-- [ ] Syscall entry assembly (x86_64 syscall instruction)
-- [ ] syscall.S untuk userspace stub
-- [ ] Unit tests
+- [ ] Native integration testing (QEMU)
+- [ ] Performance benchmarks
 - [ ] Documentation untuk setiap API
+
+---
+
+## Testing
+
+### C Unit Tests
+```bash
+cd kernel-api/tests
+make test
+```
+
+### TypeScript Tests
+```bash
+cd klat-desktop
+npm test -- --filter kernel
+```
 
 ---
 

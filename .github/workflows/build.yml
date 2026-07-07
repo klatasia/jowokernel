@@ -1,0 +1,33 @@
+name: JowoKernel Cloud Build
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch: # Memungkinkan eksekusi manual
+
+jobs:
+  build-kernel:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Install Toolchain (Clang, LLD, NASM)
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y clang lld make nasm xorriso mtools grub-pc-bin grub-common
+
+    - name: Compile JowoKernel
+      run: |
+        make clean
+        make
+
+    - name: Upload jowokernel.bin
+      uses: actions/upload-artifact@v4
+      with:
+        name: jowokernel-bin
+        path: build/jowokernel.bin
+        retention-days: 7

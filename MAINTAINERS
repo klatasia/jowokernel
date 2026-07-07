@@ -1,0 +1,22 @@
+JowoKernel Maintainers
+======================
+
+This file lists the maintainers for the JowoKernel project.
+
+Core Microkernel
+----------------
+M: JowoKernel Team <core@jowokernel.org>
+S: Maintained
+F: kernel/
+
+x86_64 Architecture
+-------------------
+M: JowoKernel Team <arch-x86@jowokernel.org>
+S: Maintained
+F: kernel/arch/x86/
+
+System Components
+-----------------
+M: JowoKernel Team <system@jowokernel.org>
+S: Maintained
+F: system/

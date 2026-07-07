@@ -4,6 +4,78 @@
 
 ---
 
+# 🚨 ATURAN UTAMA
+
+## GUI KLAT Desktop ADALAH DESAIN FINAL - DILINDUNGI
+
+```
+klat-desktop/                          ← TIDAK BOLEH DIUBAH
+│
+├── Desktop Experience (STABLE)        ← DILINDUNGI
+├── Launcher (STABLE)                  ← DILINDUNGI
+├── Taskbar (STABLE)                   ← DILINDUNGI
+├── Window Manager (STABLE)             ← DILINDUNGI
+├── Components (STABLE)                 ← DILINDUNGI
+├── Theme (STABLE)                      ← DILINDUNGI
+├── Animation (STABLE)                  ← DILINDUNGI
+└── Icons (STABLE)                     ← DILINDUNGI
+```
+
+**GUI bukan objek migrasi. GUI adalah client. Yang berubah adalah backend.**
+
+## ❌ YANG TIDAK BOLEH
+
+```text
+- Redesign GUI
+- Rewrite Desktop
+- Rewrite Launcher
+- Rewrite Window Manager
+- Ubah struktur komponen
+```
+
+## ✅ YANG BOLEH
+
+```text
+- Build Runtime
+- Build Kernel API
+- Build Native Provider
+- Connect ke GUI yang sudah ada
+- Fix bug UI (dengan instruksi)
+```
+
+## Arsitektur Final
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│           KLAT DESKTOP (TETAP - DILINDUNGI)                │
+│  Desktop │ Launcher │ Taskbar │ Browser │ Settings │ UI  │
+└─────────────────────────────┬───────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Runtime Services                            │
+│                 (Berkembang - API stabil)                     │
+└─────────────────────────────┬───────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                      Kernel API Layer                         │
+│                    (Phase 1 - DONE ✅)                       │
+└─────────────────────────────┬───────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│     Native Provider  ←→  Browser Provider  ←→  Emulator      │
+└─────────────────────────────┬───────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                         JowoKernel                           │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
 ## Status Legend
 
 | Status | Arti |

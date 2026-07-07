@@ -4,38 +4,145 @@
 
 ---
 
+# 🚨 ATURAN PALING PENTING
+
+## GUI adalah Desain Final - DILINDUNGI
+
+```
+klat-desktop/
+│
+├── GUI / Desktop Experience          ← DILINDUNGI
+├── Window Layout                    ← DILINDUNGI
+├── Theme                           ← DILINDUNGI
+├── Animation                       ← DILINDUNGI
+├── Components                      ← DILINDUNGI
+├── Icons                           ← DILINDUNGI
+├── Launcher                        ← DILINDUNGI
+├── Taskbar                         ← DILINDUNGI
+└── UX                             ← DILINDUNGI
+```
+
+**GUI adalah client, bukan objek migrasi.**
+
+Yang dimigrasikan adalah **backend**.
+
+```
+❌ DILARANG:
+   - Redesign GUI
+   - Rewrite Desktop
+   - Rewrite Launcher
+   - Rewrite Window Manager
+
+✅ WAJIB:
+   - Bikin Runtime
+   - Bikin Kernel API
+   - Bikin Native Provider
+   - Hubungkan ke GUI yang sudah ada
+```
+
+**GUI tetap. Backend yang berubah.**
+
+---
+
+## Arsitektur Final
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│           KLAT DESKTOP (TETAP - DILINDUNGI)                │
+│  Desktop │ Launcher │ Taskbar │ Browser │ Settings │ UI  │
+└─────────────────────────────┬───────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Runtime Services                            │
+│            (Berkembang - tapi API tetap stabil)              │
+└─────────────────────────────┬───────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                      Kernel API Layer                         │
+│                    (Phase 1 - DONE)                          │
+└─────────────────────────────┬───────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│          Native Provider │ Browser Provider                  │
+└─────────────────────────────┬───────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                         JowoKernel                          │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Filosofi Pengembangan
+
+> **GUI bukan objek migrasi.**
+> **GUI adalah client.**
+> **Yang dimigrasikan adalah backend.**
+
+Contoh:
+
+**Sekarang:**
+```ts
+DesktopShell → runtime.filesystem.read()
+```
+
+**Browser:**
+```ts
+DesktopShell → runtime.filesystem → Browser Provider → File System Access API
+```
+
+**Native:**
+```ts
+DesktopShell → runtime.filesystem → Native Provider → JowoKernel VFS
+```
+
+**DesktopShell TIDAK BERUBAH SAMA SEKALI.**
+
+---
+
+## Prinsip Utama
+
+1. **GUI adalah sacred** - Jangan pernah ubah GUI tanpa instruksi eksplisit
+2. **Backend berkembang** - Runtime, Kernel API, Provider, JowoKernel berkembang
+3. **API stabil** - Interface Runtime tetap konsisten
+4. **Desktop Experience konsisten** - Sama di Browser Emulator maupun Native
+
+---
+
+# Dokumentasi Teknis
+
+---
+
 ## Peran
 
 Anda adalah **Lead Software Engineer** untuk proyek KLAT OS.
 
 ## Target Utama
 
-Membangun sistem operasi modern berbasis **JowoKernel** yang mampu berjalan **native di QEMU** tanpa bergantung pada browser.
+Membangun sistem operasi modern berbasis **JowoKernel** yang mampu berjalan **native di QEMU** dengan **Desktop Experience yang sama** dengan browser.
 
 ---
 
 ## Arsitektur yang WAJIB Dipatuhi
 
 ```
-Applications
+KLAT DESKTOP (STABLE)
         │
         ▼
-Desktop Experience
-        │
-        ▼
-Runtime Services
+Runtime Services (BERKEMBANG)
         │
         ▼
 Kernel API Layer
         │
         ▼
-Syscall Dispatcher
+Native Provider ←→ Browser Provider
         │
         ▼
 JowoKernel
-        │
-        ▼
-Drivers
         │
         ▼
 Hardware
@@ -43,7 +150,7 @@ Hardware
 
 ---
 
-## Prinsip Utama
+## Prinsip Teknis
 
 1. **Jangan melewati Kernel API Layer**
    - Semua komunikasi harus lewat layer ini
@@ -135,9 +242,9 @@ Hardware
 
 | Priority | Phase | Deskripsi |
 |----------|-------|-----------|
-| 1 | PHASE 1 | Kernel API Layer |
-| 2 | PHASE 2 | Native Runtime Providers |
-| 3 | PHASE 3 | Runtime ↔ JowoKernel Integration |
+| 1 | PHASE 1 | Kernel API Layer ✅ DONE |
+| 2 | PHASE 2 | Native Runtime Providers ✅ DONE |
+| 3 | PHASE 3 | Runtime ↔ JowoKernel Integration ✅ DONE |
 | 4 | PHASE 4 | Boot Pipeline |
 | 5 | PHASE 5 | Window System |
 | 6 | PHASE 6 | Filesystem |
@@ -150,39 +257,32 @@ Hardware
 
 ---
 
-## Struktur Direktori Target
+## Struktur Direktori
 
 ```
 klat-os/
 ├── kernel/                    # JowoKernel C++ code
 │   ├── arch/x86/             # x86 architecture
-│   ├── subsystems/           # 24 subsystems
+│   ├── subsystems/            # 24 subsystems
 │   ├── dev/drivers/          # Hardware drivers
 │   ├── vm/                   # Virtual memory
 │   └── fs/                   # Filesystem
 │
-├── kernel-api/               # NEW: Kernel API Layer
-│   ├── contracts/           # Interface definitions
-│   ├── dispatcher/          # Syscall dispatcher
-│   ├── handles/             # Handle management
-│   ├── errors/              # Error handling
-│   └── syscalls/            # Syscall implementations
+├── kernel-api/               # Kernel API Layer (Phase 1 ✅)
+│   ├── contracts/             # Interface definitions
+│   ├── dispatcher/           # Syscall dispatcher
+│   ├── handles/              # Handle management
+│   └── errors/               # Error handling
 │
-├── src/
-│   ├── system/              # TypeScript Runtime
-│   │   ├── runtimes/       # Process, Memory, Window, etc.
-│   │   ├── providers/       # Browser, Native, Emulator
-│   │   ├── kernel/          # Kernel bridge
-│   │   └── hal/             # Hardware abstraction
-│   ├── klat-desktop/        # Svelte 5 Desktop UI
-│   └── apps/                # Desktop applications
+├── userspace/                 # Userspace programs (Phase 3 ✅)
+│   ├── libjowo/              # JowoLibc
+│   ├── init/                 # Init process
+│   └── shell/                # Shell
 │
-├── userspace/               # Userspace programs
-│   ├── init/                # Init process
-│   ├── shell/               # Shell
-│   └── libjowo/             # JowoKernel libc
+├── klat-desktop/              # KLAT Desktop UI (PROTECTED - STABLE)
+│   └── src/                   # Svelte 5 components
 │
-└── build-x86_64/           # Build output
+└── build-x86_64/              # Build output
 ```
 
 ---
@@ -190,6 +290,7 @@ klat-os/
 ## Checklist Sebelum Commit
 
 - [ ] Kode sesuai arsitektur
+- [ ] GUI TIDAK berubah
 - [ ] TypeScript check: `npx tsc --noEmit` ✅
 - [ ] Build: `npm run build` ✅
 - [ ] Kernel build: `make kernel` ✅
@@ -209,6 +310,8 @@ klat-os/
 6. ❌ Hardcoded path (gunakan konstanta)
 7. ❌ Commit dengan build error
 8. ❌ Breaking change tanpa versioning
+9. ❌ Ubah GUI tanpa instruksi eksplisit
+10. ❌ Redesign Desktop Experience
 
 ---
 
@@ -252,6 +355,26 @@ class StorageRuntime {
 }
 ```
 
+### ❌ SALAH (Ubah GUI)
+```typescript
+// DILARANG - Mengubah DesktopShell.ts
+class DesktopShell {
+  // ❌ Tidak boleh mengubah ini
+  // Hanya boleh menambah jika benar-benar perlu
+}
+```
+
+### ✅ BENAR (Tambah Provider)
+```typescript
+// ✅ BENAR - Menambah NativeFilesystemProvider
+class NativeFilesystemProvider implements IFilesystemProvider {
+  // Ini yang berubah, bukan DesktopShell
+  async read(path: string): Promise<Uint8Array> {
+    return this.kernel.filesystem.read(path);
+  }
+}
+```
+
 ---
 
 ## Testing Strategy
@@ -267,7 +390,7 @@ class StorageRuntime {
 
 ### System Test
 - Full boot di QEMU
-- Desktop shell rendering
+- Desktop shell rendering (GUI tetap sama)
 - Window operations
 - File operations
 
@@ -281,10 +404,33 @@ class StorageRuntime {
 ## Referensi
 
 - [ROADMAP.md](./ROADMAP.md) — Timeline dan milestone
-- [ARCHITECTURE.md](./klat-desktop/ARCHITECTURE.md) — Detail arsitektur
-- [public/jowokernel/*.h](./public/jowokernel/) — Kernel headers
+- [PROGRESS.md](./PROGRESS.md) — Progress tracker
+- [klat-desktop/](.//klat-desktop/) — Desktop UI (PROTECTED)
+
+---
+
+## Ringkasan Aturan
+
+| Yang Harus | Yang Tidak Boleh |
+|------------|------------------|
+| Bikin Runtime | Ubah GUI |
+| Bikin Kernel API | Redesign Desktop |
+| Bikin Native Provider | Rewrite Launcher |
+| Hubungkan ke GUI | Bypass Provider |
+| Jaga API stabil | Langsung syscall |
+| Test di QEMU | Commit dengan error |
+
+---
+
+**GUI tetap.**
+**Runtime berkembang.**
+**Kernel berkembang.**
+**Provider berkembang.**
+
+**Desktop Experience harus tetap konsisten di Browser Emulator maupun Native KLAT OS.**
 
 ---
 
 *Prompt ini WAJIB digunakan setiap kali AI bekerja di proyek KLAT OS.*
 *Setiap implementasi harus membawa KLAT OS selangkah lebih dekat menuju boot penuh di QEMU.*
+*GUI adalah sacred - lindungi selalu.*

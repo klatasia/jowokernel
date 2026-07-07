@@ -71,6 +71,61 @@ Notes:
 
 | Code | Title | Severity | Gate |
 |------|-------|----------|------|
+| KERNEL-001 | APIC/Timer initialization crash | MEDIUM | M2 |
+
+---
+
+## CONFIRMED
+
+| Code | Title | Severity | Gate |
+|------|-------|----------|------|
+| KERNEL-001 | APIC/Timer initialization crash | MEDIUM | M2 |
+
+---
+
+### KERNEL-001: APIC/Timer initialization crash
+
+**Title:** APIC/Timer initialization crash during subsystem boot
+
+**Status:** OPEN
+
+**Date Opened:** 2026-07-07
+
+**Severity:** MEDIUM
+
+**Affected Gate:** M2 Kernel Validation
+
+**Description:**
+APIC access crash occurs after all subsystems initialized and scheduler ready. Crash happens during Graphics subsystem initialization or shortly after. Registers indicate APIC MMIO access to 0xFEE000F0 (Local APIC registers).
+
+**Evidence:**
+```
+[Scheduler] Ready
+[APIC/Timer] Access crash at 0xFEE000F0
+CR2: 0xFEE000F0
+Error Code: 0x00000002
+Vector: 0x0E (Page Fault)
+RIP: 0x0000000000106969
+```
+
+**Impact:**
+- Blocks M2 Kernel Validation (APIC timer stress test)
+- Does NOT block M1.1-M1.4 (crash after scheduler ready)
+
+**Fix:** Pending
+
+**Notes:**
+- Crash occurs post-subsystem-init
+- APIC base: 0xFEE00000
+- Local APIC Timer: 0xFEE000F0
+- Priority: MEDIUM (does not block M1)
+
+---
+
+## OPEN
+
+| Code | Title | Severity | Gate |
+|------|-------|----------|------|
 | (none) | | | |
 
 ---
@@ -80,10 +135,6 @@ Notes:
 | Code | Title | Severity | Gate |
 |------|-------|----------|------|
 | (none) | | | |
-
----
-
-## IN_PROGRESS
 
 | Code | Title | Severity | Gate |
 |------|-------|----------|------|

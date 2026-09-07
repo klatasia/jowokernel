@@ -1,3 +1,0 @@
-#!/bin/sh
-
-make && mcopy -o -i out/disk.img@@1024K ../build-x86/zircon.bin ::zircon.bin && make qemu
